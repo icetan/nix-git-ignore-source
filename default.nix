@@ -1,7 +1,10 @@
 { pkgs ? (import <nixpkgs> {}) }: with pkgs; let
   match = re: x: builtins.match re x != null;
   nmatch = re: x: ! (match re x);
-  globToRegex = x: "^" + (builtins.replaceStrings ["." "*"] ["\\." ".*"] x) + "$";
+  globToRegex = x: "^" + (builtins.replaceStrings ["." "*"] ["\\." "[^/]*"] x) + "$";
+  drop = x: builtins.substring 0 ((lib.stringLength x) - 1) x;
+  lastChar = x: builtins.substring ((lib.stringLength x) - 1) 1 x;
+  isDir = x: lastChar x == "/";
 
   gitIgnoreFilter = gitignore: path: type: let
     baseName = baseNameOf (toString path);
@@ -13,16 +16,21 @@
   in (
     (lib.sources.cleanSourceFilter path type) &&
     (type != "symlink") &&
-    ! (lib.any (re:
-      (match re relPath) ||
-      (match re baseName)
+    ! (lib.any (re: let
+      ifDir = lib.optionalString ( (isDir (drop re)) && (type == "directory") ) "/";
+    in
+      ( (match re (relPath + ifDir)) || (match re (baseName + ifDir)) )
     ) ignoreRegex)
   );
 
   gitIgnoreSource = src: let
     gitignore = (toString src) + "/.gitignore";
   in
-    builtins.filterSource (gitIgnoreFilter gitignore) src;
+    builtins.filterSource (p: t: let
+      pass = gitIgnoreFilter gitignore p t;
+    in
+      builtins.trace "${if pass then "o" else "x"} ${p} ${t}" pass
+    ) src;
 in {
   inherit gitIgnoreSource gitIgnoreFilter;
 }

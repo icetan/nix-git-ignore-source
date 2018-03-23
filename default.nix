@@ -17,7 +17,7 @@
     baseName = baseNameOf (toString path);
     relPath = removePrefix (dirOf (toString gitignore) + "/") (toString path);
     ignoreGlob = filter
-      (nmatch' "^\\s*($|#.*)")
+      (nmatch' "^[:space:]*($|#.*)")
       (splitString "\n" (readFile gitignore));
     ignoreRegex = map globToRegex ignoreGlob;
   in (

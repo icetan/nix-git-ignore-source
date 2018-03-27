@@ -24,9 +24,9 @@ let
     stdenv fetchgit;
 
   gis = import (fetchgit {
-    url: "git://github.com/icetan/nix-git-ignore-source";
-    rev: "f495761ee217f5481f4305fb90ce8b5219157c73";
-    sha256: "0b9ga733mq0ryd7xjsla0ijc9blrj5rw8i2d2g4jazhm31lc350j";
+    url = "git://github.com/icetan/nix-git-ignore-source";
+    rev = "f495761ee217f5481f4305fb90ce8b5219157c73";
+    sha256 = "0b9ga733mq0ryd7xjsla0ijc9blrj5rw8i2d2g4jazhm31lc350j";
   }) {
     inherit pkgs;
   };

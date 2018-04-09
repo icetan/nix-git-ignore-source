@@ -1,3 +1,6 @@
+**For a more mature project that solves the same problem have a look here:
+[https://github.com/siers/nix-gitignore]()**
+
 # nix-git-ignore-source
 
 Use a `.gitignore` file to filter out source files from nix derivations.

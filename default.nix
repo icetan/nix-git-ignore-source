@@ -1,9 +1,9 @@
-{ pkgs ? (import <nixpkgs> {}) }: with pkgs; let
-  inherit (builtins) trace match replaceStrings substring readFile filterSource
-    getEnv;
-  inherit (lib) stringLength filter removePrefix optionalString splitString any
-    concatStringsSep;
-  inherit (lib.sources) cleanSourceFilter cleanSourceWith;
+{ pkgs ? (import <nixpkgs> {}) }:
+let
+  inherit (builtins) trace match replaceStrings substring readFile getEnv;
+  inherit (pkgs.lib) stringLength filter removePrefix optionalString splitString
+     any concatStringsSep;
+  inherit (pkgs.lib.sources) cleanSourceWith;
 
   debug = message: value: if (getEnv "NIX_DEBUG" != "") then (trace message value) else value;
   debugMatch = re: value:

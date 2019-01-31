@@ -1,0 +1,9 @@
+# Test ignore file 1
+
+/ignorefile
+ignore-me*
+one-deep/*
+not-a-dir/
+
+!/ignore-me-not*
+!one-deep/hi

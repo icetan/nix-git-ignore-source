@@ -58,4 +58,5 @@ let
   gitIgnoreSource = src: gitIgnoreSourceFile { inherit src; };
 in {
   inherit gitIgnoreSource gitIgnoreFilter gitIgnoreSourceFile debugFilter;
+  version = "0.1.0";
 }

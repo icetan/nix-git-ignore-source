@@ -1,4 +1,4 @@
-{ pkgs ? (import <nixpkgs> {}) }:
+{ pkgs ? import <nixpkgs> {} }:
 let
   inherit (builtins) trace match replaceStrings substring readFile getEnv;
   inherit (pkgs.lib) stringLength filter removePrefix optionalString splitString
@@ -21,23 +21,23 @@ let
   lastChar = x: substring ((stringLength x) - 1) 1 x;
   isDir = x: lastChar x == "/";
 
-  getRegex = ignorefile:
+  getRegex = rootPath: ignorefile:
     let
       ignoreGlob = filter
         (nmatch' "[\t ]*($|#.*)")
-        (splitString "\n" (readFile ignorefile));
+        (splitString "\n" ignorefile);
       ignoreRegex =
         let res = map globToRegex (filter (nmatch' "!.*") ignoreGlob);
         in debug "ignore: ${concatStringsSep " " res}" res;
       unignoreRegex =
         let res = map (x: globToRegex (dropFirst x)) (filter (match' "!.*") ignoreGlob);
         in debug "unignore: ${concatStringsSep " " res}" res;
-      rootPath = dirOf (toString ignorefile);
-    in { inherit rootPath ignoreRegex unignoreRegex; };
+      #rootPath = dirOf (toString ignorefile);
+    in { inherit ignoreRegex unignoreRegex; };
 
-  gitIgnoreFilter = ignorefile:
+  gitIgnoreFilter = rootPath: ignorefile:
     let
-      inherit (getRegex ignorefile) rootPath ignoreRegex unignoreRegex;
+      inherit (getRegex rootPath ignorefile) ignoreRegex unignoreRegex;
     in
       path: type:
         let
@@ -49,14 +49,18 @@ let
             in (match' re (relPath + ifDir));
         in (any matchFile unignoreRegex) || (! (any matchFile ignoreRegex));
 
-  gitIgnoreSourceFile = { src, ignorefile ? (toString src) + "/.gitignore" }:
+  gitIgnoreSourceFile = {
+    src,
+    rootPath ? (toString src),
+    ignorefile ? readFile "${rootPath}/.gitignore",
+  }:
     cleanSourceWith {
-      filter = gitIgnoreFilter ignorefile; # debugFilter filter' "${baseNameOf ignorefile}";
+      filter = gitIgnoreFilter rootPath ignorefile;
       inherit src;
     };
 
   gitIgnoreSource = src: gitIgnoreSourceFile { inherit src; };
 in {
   inherit gitIgnoreSource gitIgnoreFilter gitIgnoreSourceFile debugFilter;
-  version = "0.1.0";
+  version = "1.0.0";
 }
